@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: drink-order-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-123456}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-drink_order_db}
+    ports:
+      # 3307 tren host de KHONG dung port voi MySQL cai san tren may (3306).
+      # Ket noi tu Workbench/DBeaver: localhost:3307
+      - "${MYSQL_HOST_PORT:-3307}:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-123456}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+  api:
+    build: .
+    container_name: drink-order-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Spring Boot relaxed binding: SPRING_DATASOURCE_URL -> spring.datasource.url.
+      # Nho vay application.yml giu nguyen, chay local bang `mvn spring-boot:run` van nhu cu.
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-drink_order_db}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-123456}
+      APP_JWT_SECRET: ${JWT_SECRET:-drink-order-jwt-secret-key-for-btl-min-32-chars}
+      APP_UPLOAD_DIR: /app/uploads
+    ports:
+      - "${API_PORT:-8081}:8081"
+    volumes:
+      # Anh upload nam trong volume rieng, khong mat khi `up -d --build`.
+      # Chi bi xoa neu chay `docker compose down -v`.
+      - upload-data:/app/uploads
+
+volumes:
+  db-data:
+  upload-data:

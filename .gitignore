@@ -1,0 +1,16 @@
+# Maven
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Log
+*.log
+
+# Bien moi truong that (dung .env.example lam mau)
+.env

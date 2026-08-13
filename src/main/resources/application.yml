@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: drink-order-api
+  datasource:
+    url: jdbc:mysql://localhost:3306/drink_order_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: never
+  servlet:
+    multipart:
+      # Giới hạn ở tầng Spring: request quá cỡ bị chặn trước khi đọc vào bộ nhớ
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+server:
+  port: 8081
+  servlet:
+    context-path: /api/v1
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+
+app:
+  jwt:
+    secret: drink-order-jwt-secret-key-for-btl-min-32-chars
+    expiration-ms: 86400000
+  admin:
+    email: ${APP_ADMIN_EMAIL:admin@drinkorder.com}
+    password: ${APP_ADMIN_PASSWORD:123456}
+    full-name: Quản trị viên
+  upload:
+    # Thư mục lưu ảnh. Trong Docker đây là volume nên ảnh không mất khi build lại.
+    dir: ${APP_UPLOAD_DIR:uploads}
+    # Đường dẫn công khai để xem ảnh, ghép sau context-path /api/v1
+    url-prefix: /uploads
